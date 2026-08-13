@@ -31,8 +31,7 @@ export const AppContextProvider = (props) => {
 
         try {
             
-            const {data} = axios.get("/api/product/list");
-
+            const {data} = await axios.get("/api/product/list");
             if (data.success) {
                 setProducts(data.products);
             } else {
@@ -47,17 +46,16 @@ export const AppContextProvider = (props) => {
 
     const fetchUserData = async () => {
          try {
-
             if (user.publicMetadata.role === "seller") {
                 setIsSeller(true)
             }
             
             const token = await getToken();
             const {data} = await axios.get('/api/user/data', {headers: {Authorization: `Bearer ${token}`}});
-
+            
             if (data.success) {
                 setUserData(data.user);
-                setCartItems(data.user.cartItems);
+                setCartItems(data.user.cartItem);
             } else {
                 toast.error(data.message);
                 
@@ -79,7 +77,16 @@ export const AppContextProvider = (props) => {
             cartData[itemId] = 1;
         }
         setCartItems(cartData);
-
+        
+        if (user){
+            try {
+                const token = await getToken();
+                await axios.post("/api/cart/update", {cartData}, {headers: {Authorization: `Bearer ${token}`}});
+                toast.success("Item Updated Successfully");
+            } catch (error) {
+                toast.error(error.message);
+            }
+        }
     }
 
     const updateCartQuantity = async (itemId, quantity) => {
@@ -90,8 +97,17 @@ export const AppContextProvider = (props) => {
         } else {
             cartData[itemId] = quantity;
         }
-        setCartItems(cartData)
-
+        setCartItems(cartData);
+        
+        if (user){
+            try {
+                const token = await getToken();
+                await axios.post("/api/cart/update", {cartData}, {headers: {Authorization: `Bearer ${token}`}});
+                toast.success("Item Added Successfully");
+            } catch (error) {
+                toast.error(error.message);
+            }
+        }
     }
 
     const getCartCount = () => {
