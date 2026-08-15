@@ -42,6 +42,43 @@ const OrderSummary = () => {
 
   const createOrder = async () => {
 
+    try {
+      
+      if (!selectedAddress) {
+        return toast.error("Please Select an Address");
+      }
+
+      // convert cart Array into an Object
+      let cartItemsArray = Object.keys(cartItems).map((key) => ({product: key, quantity: cartItems[key]}));
+      cartItemsArray = cartItemsArray.filter(item => item.quantity > 0);
+      
+      if (cartItemsArray.length ===0) {
+        toast.error("Cart is Empty");
+      } 
+
+      const token = await getToken();
+
+      // Api call
+      const {data} = await axios.post('/api/order/create', {
+        address: selectedAddress._id,
+        items: cartItemsArray,
+
+      }, 
+        {headers: {Authorization: `Bearer ${token}`}
+      });
+      
+      if (data.success) {
+        toast.success(data.message);
+        setCartItems({});
+        router.push('/order-placed')
+      } else {
+        toast.success(data.message);
+      }
+
+    } catch (error) {
+      toast.error(error.message);
+    }
+
   }
 
   useEffect(() => {

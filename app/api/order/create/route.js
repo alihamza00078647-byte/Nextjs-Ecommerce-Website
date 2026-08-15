@@ -20,7 +20,7 @@ export async function POST(request) {
         const amount = await items.reduce( async (accessedDynamicData, item) => {
             const product = await Product.findById(item.product);
 
-            return accessedDynamicData + product.offerPrice * item.quantity;
+            return await accessedDynamicData + product.offerPrice * item.quantity;
         }, 0);  
 
         await inngest.send({
